@@ -44,7 +44,9 @@ jobs:
 
           # Discover DocC landing path (do not guess). Example index.json:
           # { "interfaceLanguages": { "swift": [ { "path": "/documentation/<tech-root>", ... } ] } }
-          landing_path=$(python3 -c "import json; j=json.load(open('${output_root}/index/index.json')); langs=j.get("interfaceLanguages",{}); items=(langs.get("swift") or next(iter(langs.values()), [])); p=(items[0].get("path") if items else "/documentation"); p=("/"+p.lstrip("/")).rstrip("/"); print(p)"
+          landing_path=$(jq -r '.interfaceLanguages.swift[0].path // (.interfaceLanguages | to_entries[0].value[0].path) // "/documentation"' "${output_root}/index/index.json")
+          landing_path="/${landing_path#"/"}"
+          landing_path="${landing_path%/}"
 
           cat > "${output_root}/index.html" <<EOF
           <!doctype html>
